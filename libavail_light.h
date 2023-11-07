@@ -23,3 +23,6 @@ const uint8_t *submitTransactionn(uint8_t *cfg,
                                   uint8_t *private_key);
 
 const uint8_t *getStatusV2(uint8_t *cfg);
+
+JNIEXPORT jstring JNICALL javaStartNode
+  (JNIEnv *, jclass);
