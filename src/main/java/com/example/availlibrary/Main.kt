@@ -34,22 +34,6 @@ class AvailLightClientLib(config: String, appId: Int) {
         Log.e("RESP", resp.toString())
         val data = "{\"data\": \"VGVzdCBkYXRhYWE=\"}"
 
-//        val privateKey =
-//            "pact source double stadium tourist lake skill ginger scatter age strike purpose"
-//        val resp2 = submitTransaction(data, privateKey)
-//
-//        val resp2 = getConfidenceList()
-
-//        Log.e("RESP2", resp2.toString())
-//
-//        val resp3 = getDataVerifiedList()
-//
-//        Log.e("resp3", resp2.toString())
-//
-        val resp4 = getHeaderVerifiedList()
-
-        Log.e("resp4", resp4.toString())
-
     }
 
     fun startLightClient(onStop: () -> Unit) {
