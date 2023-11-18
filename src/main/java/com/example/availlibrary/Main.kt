@@ -3,6 +3,9 @@ package com.example.availlibrary
 import android.util.Log
 import com.example.availlibrary.models.BlockConfidence
 import com.example.availlibrary.models.LatestBlock
+import com.example.availlibrary.models.PublishMessage
+import com.example.availlibrary.models.PublishMessageList
+import com.example.availlibrary.models.PublishMessageListStrings
 import com.example.availlibrary.models.StatusV1
 import com.example.availlibrary.models.StatusV2
 import com.google.gson.Gson
@@ -26,21 +29,38 @@ class AvailLightClientLib(config: String, appId: Int) {
         this.appId = appId
         this.config = config
         System.loadLibrary("avail_light");
-        startLightClient({})
+        startLightClientWithDataToDb({})
         val resp = getStatusV2()
         Log.e("RESP", resp.toString())
         val data = "{\"data\": \"VGVzdCBkYXRhYWE=\"}"
 
-        val privateKey =
-            "pact source double stadium tourist lake skill ginger scatter age strike purpose"
-        val resp2 = submitTransaction(data, privateKey)
-        Log.e("RESP2", resp2.toString())
+//        val privateKey =
+//            "pact source double stadium tourist lake skill ginger scatter age strike purpose"
+//        val resp2 = submitTransaction(data, privateKey)
+//
+//        val resp2 = getConfidenceList()
+
+//        Log.e("RESP2", resp2.toString())
+//
+//        val resp3 = getDataVerifiedList()
+//
+//        Log.e("resp3", resp2.toString())
+//
+        val resp4 = getHeaderVerifiedList()
+
+        Log.e("resp4", resp4.toString())
 
     }
 
     fun startLightClient(onStop: () -> Unit) {
         ForkJoinPool.commonPool().submit {
             val resp = startNode(config)
+        }
+    }
+
+    fun startLightClientWithDataToDb(onStop: () -> Unit) {
+        ForkJoinPool.commonPool().submit {
+            val resp = startNodeWithBroadcastsToDb(config)
         }
     }
 
@@ -80,6 +100,50 @@ class AvailLightClientLib(config: String, appId: Int) {
             val response = getStatusV2(config).toString();
             gson.fromJson(response, StatusV2::class.java)
         } catch (e: Exception) {
+            Log.e("Latest Block.kt Error", e.toString());
+            return null;
+        }
+    }
+
+    fun getConfidenceList(): PublishMessageList? {
+        return try {
+            val response = getConfidenceMessageList(config).toString()
+            val publishMessageListStrings = gson.fromJson(response, PublishMessageListStrings::class.java)
+            val messageList: PublishMessageList =PublishMessageList(messageList = mutableListOf<PublishMessage>())
+            for(message in (publishMessageListStrings.messageList)!!)   {
+                messageList.messageList = messageList.messageList?.plus(gson.fromJson(message, PublishMessage::class.java))
+            }
+            messageList        } catch (e: Exception) {
+            Log.e("Latest Block.kt Error", e.toString());
+            return null;
+        }
+    }
+
+    fun getDataVerifiedList(): PublishMessageList? {
+        return try {
+            val response = getDataVerifiedMessageList(config).toString();
+            val publishMessageListStrings = gson.fromJson(response, PublishMessageListStrings::class.java)
+            val messageList: PublishMessageList =PublishMessageList(messageList = mutableListOf<PublishMessage>())
+            for(message in (publishMessageListStrings.messageList)!!)   {
+                messageList.messageList = messageList.messageList?.plus(gson.fromJson(message, PublishMessage::class.java))
+            }
+            messageList
+        } catch (e: Exception) {
+            Log.e("Latest Block.kt Error", e.toString());
+            return null;
+        }
+    }
+
+    fun getHeaderVerifiedList(): PublishMessageList? {
+        return try {
+            val response = getHeaderVerifiedMessageList(config);
+            Log.e("RESPONSE", response)
+            val publishMessageListStrings = gson.fromJson(response, PublishMessageListStrings::class.java)
+            val messageList: PublishMessageList =PublishMessageList(messageList = mutableListOf<PublishMessage>())
+            for(message in (publishMessageListStrings.messageList)!!)   {
+                messageList.messageList = messageList.messageList?.plus(gson.fromJson(message, PublishMessage::class.java))
+            }
+            messageList        } catch (e: Exception) {
             Log.e("Latest Block.kt Error", e.toString());
             return null;
         }
@@ -128,9 +192,16 @@ class AvailLightClientLib(config: String, appId: Int) {
 
     // v1 Calls
     private external fun startNode(cfg: String): String
+
+    private external fun startNodeWithBroadcastsToDb(cfg: String): String
+
     private external fun confidence(cfg: String, block: Int): String
     private external fun status(cfg: String, appId: Int): String
     private external fun latestBlock(cfg: String): String
+
+    private external fun getConfidenceMessageList(cfg: String): String
+    private external fun getHeaderVerifiedMessageList(cfg: String): String
+    private external fun getDataVerifiedMessageList(cfg: String): String
     private external fun startNodeWithCallback(cfg: String, callback: Callbacks): String
 
 }
