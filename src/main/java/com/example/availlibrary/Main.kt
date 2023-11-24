@@ -1,5 +1,6 @@
 package com.example.availlibrary
 
+import HeaderData
 import android.util.Log
 import com.example.availlibrary.models.BlockConfidence
 import com.example.availlibrary.models.LatestBlock
@@ -30,7 +31,7 @@ class AvailLightClientLib(config: String, appId: Int) {
         this.config = config
         System.loadLibrary("avail_light");
         startLightClientWithDataToDb({})
-        val resp = getStatusV2()
+        val resp = getBlockHeaderV2(1303)
         Log.e("RESP", resp.toString())
         val data = "{\"data\": \"VGVzdCBkYXRhYWE=\"}"
 
@@ -92,12 +93,20 @@ class AvailLightClientLib(config: String, appId: Int) {
     fun getConfidenceList(): PublishMessageList? {
         return try {
             val response = getConfidenceMessageList(config).toString()
-            val publishMessageListStrings = gson.fromJson(response, PublishMessageListStrings::class.java)
-            val messageList: PublishMessageList =PublishMessageList(messageList = mutableListOf<PublishMessage>())
-            for(message in (publishMessageListStrings.messageList)!!)   {
-                messageList.messageList = messageList.messageList?.plus(gson.fromJson(message, PublishMessage::class.java))
+            val publishMessageListStrings =
+                gson.fromJson(response, PublishMessageListStrings::class.java)
+            val messageList: PublishMessageList =
+                PublishMessageList(messageList = mutableListOf<PublishMessage>())
+            for (message in (publishMessageListStrings.messageList)!!) {
+                messageList.messageList = messageList.messageList?.plus(
+                    gson.fromJson(
+                        message,
+                        PublishMessage::class.java
+                    )
+                )
             }
-            messageList        } catch (e: Exception) {
+            messageList
+        } catch (e: Exception) {
             Log.e("Latest Block.kt Error", e.toString());
             return null;
         }
@@ -106,10 +115,17 @@ class AvailLightClientLib(config: String, appId: Int) {
     fun getDataVerifiedList(): PublishMessageList? {
         return try {
             val response = getDataVerifiedMessageList(config).toString();
-            val publishMessageListStrings = gson.fromJson(response, PublishMessageListStrings::class.java)
-            val messageList: PublishMessageList =PublishMessageList(messageList = mutableListOf<PublishMessage>())
-            for(message in (publishMessageListStrings.messageList)!!)   {
-                messageList.messageList = messageList.messageList?.plus(gson.fromJson(message, PublishMessage::class.java))
+            val publishMessageListStrings =
+                gson.fromJson(response, PublishMessageListStrings::class.java)
+            val messageList: PublishMessageList =
+                PublishMessageList(messageList = mutableListOf<PublishMessage>())
+            for (message in (publishMessageListStrings.messageList)!!) {
+                messageList.messageList = messageList.messageList?.plus(
+                    gson.fromJson(
+                        message,
+                        PublishMessage::class.java
+                    )
+                )
             }
             messageList
         } catch (e: Exception) {
@@ -122,12 +138,20 @@ class AvailLightClientLib(config: String, appId: Int) {
         return try {
             val response = getHeaderVerifiedMessageList(config);
             Log.e("RESPONSE", response)
-            val publishMessageListStrings = gson.fromJson(response, PublishMessageListStrings::class.java)
-            val messageList: PublishMessageList =PublishMessageList(messageList = mutableListOf<PublishMessage>())
-            for(message in (publishMessageListStrings.messageList)!!)   {
-                messageList.messageList = messageList.messageList?.plus(gson.fromJson(message, PublishMessage::class.java))
+            val publishMessageListStrings =
+                gson.fromJson(response, PublishMessageListStrings::class.java)
+            val messageList: PublishMessageList =
+                PublishMessageList(messageList = mutableListOf<PublishMessage>())
+            for (message in (publishMessageListStrings.messageList)!!) {
+                messageList.messageList = messageList.messageList?.plus(
+                    gson.fromJson(
+                        message,
+                        PublishMessage::class.java
+                    )
+                )
             }
-            messageList        } catch (e: Exception) {
+            messageList
+        } catch (e: Exception) {
             Log.e("Latest Block.kt Error", e.toString());
             return null;
         }
@@ -163,6 +187,39 @@ class AvailLightClientLib(config: String, appId: Int) {
 
     }
 
+    fun getBlockV2(): BlockConfidence? {
+        return try {
+            val response = getBlock(config).toString();
+            Log.e("RESPONSE", response)
+            gson.fromJson(response, BlockConfidence::class.java)
+        } catch (e: Exception) {
+            Log.e("Latest Block.kt Error", e.toString());
+            return null;
+        }
+    }
+
+    fun getBlockHeaderV2(block: Int): HeaderData? {
+        return try {
+            val response = getBlockHeader(config, block).toString();
+            Log.e("Response", response)
+            gson.fromJson(response, HeaderData::class.java)
+        } catch (e: Exception) {
+            Log.e("Latest Block.kt Error", e.toString());
+            return null;
+        }
+    }
+
+    fun getBlockDataV2(block: Int, data: Boolean, extrinsics: Boolean): BlockConfidence? {
+        return try {
+            val response = getBlockData(config, block, data, extrinsics).toString();
+            Log.e("Response", response)
+            gson.fromJson(response, BlockConfidence::class.java)
+        } catch (e: Exception) {
+            Log.e("Latest Block.kt Error", e.toString());
+            return null;
+        }
+    }
+
     fun onStop() {}
 
     private external fun getStatusV2(cfg: String): String
@@ -186,6 +243,14 @@ class AvailLightClientLib(config: String, appId: Int) {
     private external fun getConfidenceMessageList(cfg: String): String
     private external fun getHeaderVerifiedMessageList(cfg: String): String
     private external fun getDataVerifiedMessageList(cfg: String): String
-    private external fun startNodeWithCallback(cfg: String, callback: Callbacks): String
+    private external fun getBlock(cfg: String): String
+    private external fun getBlockHeader(cfg: String, block: Int): String
+    private external fun getBlockData(
+        cfg: String,
+        block: Int,
+        data: Boolean,
+        extrinsics: Boolean
+    ): String
+
 
 }
