@@ -10,28 +10,21 @@ import com.example.availlibrary.models.PublishMessageListStrings
 import com.example.availlibrary.models.StatusV1
 import com.example.availlibrary.models.StatusV2
 import com.google.gson.Gson
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.concurrent.ForkJoinPool
 
 class AvailLightClientLib(config: String, appId: Int) {
-    interface CallbackFunction {
-        fun invoke(value: String)
-    }
 
     private var config: String
     private var appId: Int
     private var lcRunning: Boolean = false;
     private var gson: Gson = Gson();
-    public var callbacks = Callbacks()
 
     init {
         this.appId = appId
         this.config = config
         System.loadLibrary("avail_light");
         startLightClientWithDataToDb({})
-        val resp = getBlockHeaderV2(1303)
+        val resp = getConfidenceList()
         Log.e("RESP", resp.toString())
         val data = "{\"data\": \"VGVzdCBkYXRhYWE=\"}"
 
@@ -137,7 +130,6 @@ class AvailLightClientLib(config: String, appId: Int) {
     fun getHeaderVerifiedList(): PublishMessageList? {
         return try {
             val response = getHeaderVerifiedMessageList(config);
-            Log.e("RESPONSE", response)
             val publishMessageListStrings =
                 gson.fromJson(response, PublishMessageListStrings::class.java)
             val messageList: PublishMessageList =
@@ -169,28 +161,9 @@ class AvailLightClientLib(config: String, appId: Int) {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    fun startLightClientWithCallback(callback: CallbackFunction, onStop: () -> Void) {
-        lcRunning = true;
-        val thread = GlobalScope.launch {
-
-            val lightNodeCoroutine = launch {
-                // Your code to run in the background thread
-                startLightNodeWithCallback(config, callback)
-            }
-        }
-        thread.start();
-        thread.invokeOnCompletion {
-            onStop();
-            lcRunning = false;
-        }
-
-    }
-
     fun getBlockV2(): BlockConfidence? {
         return try {
             val response = getBlock(config).toString();
-            Log.e("RESPONSE", response)
             gson.fromJson(response, BlockConfidence::class.java)
         } catch (e: Exception) {
             Log.e("Latest Block.kt Error", e.toString());
@@ -227,9 +200,6 @@ class AvailLightClientLib(config: String, appId: Int) {
         cfg: String, appId: Int, transaction: String, privateKey: String
     ): String
 
-    private external fun startLightNodeWithCallback(
-        cfg: String, callback: CallbackFunction
-    ): String
 
     // v1 Calls
     private external fun startNode(cfg: String): String
