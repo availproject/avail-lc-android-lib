@@ -1,21 +1,6 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.multiplatform")
-
-//    id("org.jetbrains.kotlin.android")
-}
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
-kotlin {
-    targetHierarchy.default()
-
-    androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
-        }
-    }
-
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
